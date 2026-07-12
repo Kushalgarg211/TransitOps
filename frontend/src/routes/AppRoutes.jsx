@@ -22,6 +22,10 @@ const RoleGuard = ({ allowedRoles, children }) => {
     return <Navigate to="/login" replace />;
   }
 
+  if (user.role === 'Super User') {
+    return children;
+  }
+
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/unauthorized" replace />;
   }

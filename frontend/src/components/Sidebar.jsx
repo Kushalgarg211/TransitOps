@@ -20,7 +20,8 @@ const ROLE_PERMISSIONS = {
   'Fleet Manager': ['dashboard', 'fleet', 'maintenance'],
   'Dispatcher': ['dashboard', 'trips'],
   'Safety Officer': ['drivers', 'maintenance'],
-  'Financial Analyst': ['fuel-expenses', 'analytics']
+  'Financial Analyst': ['fuel-expenses', 'analytics'],
+  'Super User': ['dashboard', 'fleet', 'drivers', 'trips', 'maintenance', 'fuel-expenses', 'analytics', 'settings']
 };
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -49,13 +50,13 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-slate-50 text-slate-800 border-r border-slate-200 transition-transform duration-150 ease-in-out md:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-amber-100/70 text-slate-800 border-r border-amber-200/70 transition-transform duration-150 ease-in-out md:translate-x-0 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } flex flex-col justify-between dark:bg-stone-900 dark:text-stone-100 dark:border-stone-800`}
     >
       <div>
         {/* Header */}
-        <div className="flex h-16 items-center justify-between px-6 border-b border-slate-200 dark:border-stone-800">
+        <div className="flex h-16 items-center justify-between px-6 border-b border-amber-200/50 dark:border-stone-800">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded bg-amber-400 text-slate-950 font-bold text-xs">
               TO
@@ -98,7 +99,7 @@ export default function Sidebar({ isOpen, onClose }) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-slate-200 p-4 bg-slate-100/40 dark:border-stone-800 dark:bg-stone-950/20">
+      <div className="border-t border-amber-200/50 p-4 bg-amber-200/20 dark:border-stone-800 dark:bg-stone-950/20">
         <button
           onClick={toggleTheme}
           className="flex w-full items-center justify-between rounded px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-200 dark:text-stone-400 dark:hover:bg-stone-800 transition-all cursor-pointer"

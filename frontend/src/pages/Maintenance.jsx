@@ -105,7 +105,7 @@ export default function Maintenance() {
               <label className="block font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Vehicle</label>
               <select
                 {...register('vehiclePlate', { required: true })}
-                className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-700"
+                className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
               >
                 <option value="">-- Select Vehicle --</option>
                 {activeVehicles.map((v) => (
@@ -119,16 +119,16 @@ export default function Maintenance() {
               <input
                 type="text"
                 {...register('serviceType', { required: true })}
-                className="w-full rounded border border-slate-300 bg-white px-3 py-2 focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950"
+                className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Cost ($)</label>
+              <label className="block font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Cost (₹)</label>
               <input
                 type="number"
                 {...register('cost', { required: true })}
-                className="w-full rounded border border-slate-300 bg-white px-3 py-2 focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950"
+                className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950"
               />
             </div>
 
@@ -137,7 +137,7 @@ export default function Maintenance() {
               <input
                 type="text"
                 {...register('date', { required: true })}
-                className="w-full rounded border border-slate-300 bg-white px-3 py-2 focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950"
+                className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950"
               />
             </div>
 
@@ -146,14 +146,14 @@ export default function Maintenance() {
               <input
                 type="text"
                 {...register('status', { required: true })}
-                className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 focus:outline-none dark:border-slate-800 dark:bg-stone-900"
+                className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 focus:outline-none dark:border-slate-800 dark:bg-stone-900/50 text-slate-800 dark:text-white"
                 readOnly
               />
             </div>
 
             <button
               type="submit"
-              className="w-full rounded bg-amber-400 text-slate-950 px-4 py-2 font-bold hover:bg-amber-500 transition-all cursor-pointer text-center"
+              className="w-full rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-4 py-2 font-bold hover:bg-amber-100 transition-all cursor-pointer text-center dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-950/60"
             >
               Save
             </button>
@@ -190,7 +190,7 @@ export default function Maintenance() {
                 <tr className="border-b border-slate-200 dark:border-stone-800">
                   <th className="py-2.5 font-bold uppercase text-slate-400">Vehicle</th>
                   <th className="py-2.5 font-bold uppercase text-slate-400">Service</th>
-                  <th className="py-2.5 font-bold uppercase text-slate-400">Cost ($)</th>
+                  <th className="py-2.5 font-bold uppercase text-slate-400">Cost (₹)</th>
                   <th className="py-2.5 font-bold uppercase text-slate-400">Status</th>
                   <th className="py-2.5 text-right font-bold uppercase text-slate-400">Actions</th>
                 </tr>
@@ -217,7 +217,7 @@ export default function Maintenance() {
                         {log.status === 'Open' ? (
                           <button
                             onClick={() => handleClose(log.id, log.cost)}
-                            className="inline-flex items-center gap-0.5 rounded bg-emerald-600 text-white px-2 py-0.5 text-[10px] font-bold hover:bg-emerald-500 cursor-pointer"
+                            className="inline-flex items-center gap-0.5 rounded border border-emerald-200/50 bg-emerald-50 text-emerald-800 px-2 py-0.5 text-[10px] font-bold hover:bg-emerald-100 cursor-pointer transition-all dark:bg-emerald-950/20 dark:border-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
                           >
                             <CheckIcon className="h-3 w-3" />
                             Resolve Available

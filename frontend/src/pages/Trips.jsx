@@ -7,6 +7,31 @@ import { getDrivers } from '../services/drivers';
 import { toast } from 'react-hot-toast';
 import { PlayIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
+const CITIES = [
+  'Gandhinagar Depot',
+  'Ahmedabad Hub',
+  'Vatva Industrial Area',
+  'Sanand Warehouse',
+  'Kalol Depot',
+  'Mumbai',
+  'Delhi',
+  'Bangalore',
+  'Hyderabad',
+  'Chennai',
+  'Kolkata',
+  'Pune',
+  'Jaipur',
+  'Lucknow',
+  'Surat',
+  'Indore',
+  'Bhopal',
+  'Vadodara',
+  'Rajkot',
+  'Mansa',
+  'Vatva',
+  'Sanand'
+];
+
 export default function Trips() {
   const queryClient = useQueryClient();
   const [selectedVehicleId, setSelectedVehicleId] = useState('');
@@ -41,14 +66,72 @@ export default function Trips() {
     }
   });
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
-      source: 'Gandhinagar Depot',
-      destination: 'Ahmedabad Hub',
-      cargoWeight: 700,
-      distance: 38
+      source: '',
+      destination: '',
+      driverId: '',
+      cargoWeight: '',
+      distance: '',
+      revenue: ''
     }
   });
+
+  const watchedSource = watch('source');
+  const watchedDestination = watch('destination');
+
+  React.useEffect(() => {
+    if (!watchedSource || !watchedDestination) return;
+    
+    const s = watchedSource.trim().toLowerCase();
+    const d = watchedDestination.trim().toLowerCase();
+    
+    if (s === d) {
+      setValue('distance', '0');
+      return;
+    }
+
+    const key = `${s}_to_${d}`;
+    const reverseKey = `${d}_to_${s}`;
+    
+    const distanceMatrix = {
+      'gandhinagar depot_to_ahmedabad hub': 25,
+      'gandhinagar depot_to_vatva industrial area': 38,
+      'gandhinagar depot_to_sanand warehouse': 45,
+      'gandhinagar depot_to_kalol depot': 18,
+      
+      'ahmedabad hub_to_vatva industrial area': 15,
+      'ahmedabad hub_to_sanand warehouse': 30,
+      'ahmedabad hub_to_kalol depot': 28,
+      
+      'vatva industrial area_to_sanand warehouse': 35,
+      'vatva industrial area_to_kalol depot': 42,
+      
+      'sanand warehouse_to_kalol depot': 48,
+      
+      'mumbai_to_delhi': 1400,
+      'mumbai_to_bangalore': 1000,
+      'mumbai_to_pune': 150,
+      'delhi_to_kolkata': 1500,
+      'bangalore_to_chennai': 350,
+      'hyderabad_to_bangalore': 570
+    };
+    
+    let dist = distanceMatrix[key] || distanceMatrix[reverseKey];
+    
+    if (dist) {
+      setValue('distance', String(dist));
+    } else {
+      // Calculate deterministic hash distance for custom inputs
+      let hash = 0;
+      const combined = s + d;
+      for (let i = 0; i < combined.length; i++) {
+        hash = combined.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      dist = 50 + Math.abs(hash % 450);
+      setValue('distance', String(dist));
+    }
+  }, [watchedSource, watchedDestination, setValue]);
 
   const availableVehicles = vehicles.filter((v) => v.status === 'Available');
   const availableDrivers = drivers.filter((d) => d.status === 'Available' || d.status === 'Off Duty');
@@ -139,22 +222,32 @@ export default function Trips() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Source</label>
+              <label className="block font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Source (Major Cities)</label>
               <input
                 type="text"
+                list="city-options"
                 {...register('source', { required: true })}
-                className="w-full rounded border border-slate-300 bg-white px-3 py-2 focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950"
+                placeholder="Select or type city..."
+                className="w-full rounded border border-slate-300 bg-white px-3 py-2 focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950 text-slate-750 dark:text-slate-200"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Destination</label>
+              <label className="block font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Destination (Major Cities)</label>
               <input
                 type="text"
+                list="city-options"
                 {...register('destination', { required: true })}
-                className="w-full rounded border border-slate-300 bg-white px-3 py-2 focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950"
+                placeholder="Select or type city..."
+                className="w-full rounded border border-slate-300 bg-white px-3 py-2 focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-955 text-slate-755 dark:text-slate-200"
               />
             </div>
+
+            <datalist id="city-options">
+              {CITIES.map((city) => (
+                <option key={city} value={city} />
+              ))}
+            </datalist>
 
             <div>
               <label className="block font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Vehicle (Available Only)</label>
@@ -192,7 +285,7 @@ export default function Trips() {
                   value={cargoWeightInput}
                   onChange={(e) => setCargoWeightInput(e.target.value)}
                   placeholder="700"
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-850 dark:text-white focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950"
                 />
               </div>
 
@@ -201,7 +294,7 @@ export default function Trips() {
                 <input
                   type="number"
                   {...register('distance', { required: true })}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-955"
                 />
               </div>
             </div>
@@ -219,7 +312,7 @@ export default function Trips() {
               <button
                 type="submit"
                 disabled={capacityExceeded}
-                className="flex-1 rounded bg-amber-400 text-slate-950 px-4 py-2 font-bold hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer text-center justify-center items-center"
+                className="flex-1 rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-4 py-2 font-bold hover:bg-amber-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer text-center justify-center items-center dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60"
               >
                 Dispatch {capacityExceeded && '(Disabled)'}
               </button>
@@ -230,7 +323,7 @@ export default function Trips() {
                   setSelectedVehicleId('');
                   setCargoWeightInput('');
                 }}
-                className="rounded border border-slate-300 bg-white px-4 py-2 font-semibold hover:bg-slate-100"
+                className="rounded border border-slate-300 bg-white px-4 py-2 font-semibold hover:bg-slate-100 dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800"
               >
                 Cancel
               </button>
@@ -278,7 +371,7 @@ export default function Trips() {
                     {trip.status === 'Draft' && (
                       <button
                         onClick={() => updateStatusMutation.mutate({ id: trip.id, status: 'Dispatched' })}
-                        className="inline-flex items-center gap-1 rounded bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-indigo-500 cursor-pointer"
+                        className="inline-flex items-center gap-1 rounded border border-indigo-200/50 bg-indigo-50 text-indigo-800 px-2 py-0.5 text-[10px] font-bold hover:bg-indigo-100 cursor-pointer transition-all dark:bg-indigo-950/20 dark:border-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
                       >
                         Dispatch
                       </button>
@@ -286,7 +379,7 @@ export default function Trips() {
                     {trip.status === 'Dispatched' && (
                       <button
                         onClick={() => updateStatusMutation.mutate({ id: trip.id, status: 'Completed' })}
-                        className="inline-flex items-center gap-1 rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-500 cursor-pointer"
+                        className="inline-flex items-center gap-1 rounded border border-emerald-250/60 bg-emerald-50 text-emerald-800 px-2 py-0.5 text-[10px] font-bold hover:bg-emerald-100 cursor-pointer transition-all dark:bg-emerald-950/20 dark:border-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
                       >
                         Complete
                       </button>
@@ -294,7 +387,7 @@ export default function Trips() {
                     {(trip.status === 'Draft' || trip.status === 'Dispatched') && (
                       <button
                         onClick={() => updateStatusMutation.mutate({ id: trip.id, status: 'Cancelled' })}
-                        className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-bold text-rose-600 hover:bg-rose-50 dark:border-slate-800 dark:bg-slate-900 cursor-pointer"
+                        className="inline-flex items-center gap-1 rounded border border-rose-200/50 bg-rose-50 text-rose-700 px-2 py-0.5 text-[10px] font-bold hover:bg-rose-100 cursor-pointer transition-all dark:bg-rose-950/20 dark:border-rose-900/30 dark:text-rose-450 dark:hover:bg-rose-950/40"
                       >
                         Cancel
                       </button>
