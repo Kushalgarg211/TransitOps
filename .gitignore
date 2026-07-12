@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Local Environment Variables (Sensitive credentials)
+.env
+
+# Log files
+*.log
+npm-debug.log*
+
+# Editors and IDEs
+.vscode/
+.idea/
+.gemini/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
