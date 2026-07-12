@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #f0fdf4;
-  --color-brand-100: #dcfce7;
-  --color-brand-500: #10b981;
-  --color-brand-600: #059669;
-  --color-brand-700: #047857;
+  --color-brand-50: #fef8e7; /* Soft pastel amber background */
+  --color-brand-100: #fef0cd; /* Pastel amber hover */
+  --color-brand-500: #f1a80a; /* Pastel warm gold primary */
+  --color-brand-600: #d99304;
+  --color-brand-700: #b27602;
 
-  --color-dark-50: #f8fafc;
-  --color-dark-100: #f1f5f9;
-  --color-dark-800: #1e293b;
-  --color-dark-900: #0f172a;
-  --color-dark-950: #020617;
+  --color-dark-50: #fafaf9;
+  --color-dark-100: #f5f5f4;
+  --color-dark-800: #292524;
+  --color-dark-900: #1c1917;
+  --color-dark-950: #0c0a09;
 }
 
 @layer base {
@@ -23,15 +23,20 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-950 transition-colors duration-200 antialiased overflow-x-hidden;
+    @apply bg-slate-50 text-slate-800 transition-colors duration-150 antialiased overflow-x-hidden;
   }
   
   body.dark {
-    @apply bg-slate-950 text-slate-50;
+    @apply bg-stone-950 text-stone-100;
   }
 }
 
-/* Custom modern scrollbar styling */
+/* Custom rounded corners: less rounded for clean wireframe aesthetic */
+* {
+  border-radius: 0.25rem !important; /* Forces all elements to default to rounded (4px) or rounded-sm (2px) */
+}
+
+/* Scrollbars styling */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -42,35 +47,48 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
+  @apply bg-slate-300;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  @apply bg-slate-800;
+  @apply bg-stone-800;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400;
+/* Pastel Panels for cards/tables matching mockup structures */
+.sketch-panel {
+  @apply bg-white border border-slate-300 p-4 shadow-2xs;
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-700;
+.dark .sketch-panel {
+  @apply bg-stone-900 border-stone-800 shadow-none;
 }
 
-/* Glassmorphism helpers for premium UI */
+/* Glassmorphism helpers for panels */
 .glass-panel {
-  @apply bg-white/70 backdrop-blur-md border border-slate-200/80 shadow-sm;
+  @apply bg-white border border-slate-300 shadow-2xs;
 }
 
 .dark .glass-panel {
-  @apply bg-slate-900/70 backdrop-blur-md border-slate-800/80 shadow-none;
+  @apply bg-stone-900 border-stone-800 shadow-none;
 }
 
-/* Chart tooltips customize */
-.recharts-default-tooltip {
-  @apply !bg-white !border-slate-200 !rounded-lg !shadow-lg !text-slate-800 !py-2 !px-3 !text-xs !font-medium;
+/* Pastel status tag classes */
+.tag-pastel-green {
+  @apply bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-300 dark:border-emerald-900/30;
 }
 
-.dark .recharts-default-tooltip {
-  @apply !bg-slate-900 !border-slate-800 !text-slate-200 !shadow-none;
+.tag-pastel-blue {
+  @apply bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-950/20 dark:text-sky-300 dark:border-sky-900/30;
+}
+
+.tag-pastel-amber {
+  @apply bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/20 dark:text-amber-300 dark:border-amber-900/30;
+}
+
+.tag-pastel-red {
+  @apply bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-950/20 dark:text-rose-300 dark:border-rose-900/30;
+}
+
+.tag-pastel-grey {
+  @apply bg-slate-100 text-slate-700 border border-slate-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700;
 }
