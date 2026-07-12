@@ -19,8 +19,8 @@ import {
 const ROLE_PERMISSIONS = {
   'Fleet Manager': ['dashboard', 'fleet', 'maintenance'],
   'Dispatcher': ['dashboard', 'trips'],
-  'Safety Officer': ['drivers', 'maintenance'],
-  'Financial Analyst': ['fuel-expenses', 'analytics'],
+  'Safety Officer': ['dashboard', 'drivers', 'maintenance'],
+  'Financial Analyst': ['dashboard', 'fuel-expenses', 'analytics'],
   'Super User': ['dashboard', 'fleet', 'drivers', 'trips', 'maintenance', 'fuel-expenses', 'analytics', 'settings']
 };
 

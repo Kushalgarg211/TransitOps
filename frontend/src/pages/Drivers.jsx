@@ -268,15 +268,17 @@ export default function Drivers() {
                       >
                         <PencilSquareIcon className="h-4.5 w-4.5" />
                       </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteId(driver.id);
-                        }}
-                        className="rounded p-1 text-rose-600 hover:bg-rose-50"
-                      >
-                        <TrashIcon className="h-4.5 w-4.5" />
-                      </button>
+                      {(user?.role === 'Fleet Manager' || user?.role === 'Super User') && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteId(driver.id);
+                          }}
+                          className="rounded p-1 text-rose-600 hover:bg-rose-50 cursor-pointer"
+                        >
+                          <TrashIcon className="h-4.5 w-4.5" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
