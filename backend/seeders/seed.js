@@ -20,8 +20,20 @@ async function seed() {
         role: 'Fleet Manager',
       },
       {
+        name: 'Manager User In',
+        email: 'manager@transitops.in',
+        password_hash: 'password123',
+        role: 'Fleet Manager',
+      },
+      {
         name: 'Dispatcher User',
         email: 'dispatcher@transitops.com',
+        password_hash: 'password123',
+        role: 'Dispatcher',
+      },
+      {
+        name: 'Dispatcher User In',
+        email: 'Raven.k@transitops.in',
         password_hash: 'password123',
         role: 'Dispatcher',
       },
@@ -32,10 +44,28 @@ async function seed() {
         role: 'Safety Officer',
       },
       {
+        name: 'Safety User In',
+        email: 'safety@transitops.in',
+        password_hash: 'password123',
+        role: 'Safety Officer',
+      },
+      {
         name: 'Finance User',
         email: 'finance@transitops.com',
         password_hash: 'password123',
         role: 'Financial Analyst',
+      },
+      {
+        name: 'Finance User In',
+        email: 'finance@transitops.in',
+        password_hash: 'password123',
+        role: 'Financial Analyst',
+      },
+      {
+        name: 'Sarthak Sahu',
+        email: 'sarthaksahu333@gmail.com',
+        password_hash: 'vilenop1234',
+        role: 'Super User',
       },
     ], { validate: true, individualHooks: true });
     console.log('Seeded Users.');

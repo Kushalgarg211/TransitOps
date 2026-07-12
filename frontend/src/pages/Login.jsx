@@ -2,20 +2,42 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'react-hot-toast';
 import { TruckIcon } from '@heroicons/react/24/outline';
 
 export default function Login() {
-  const { login } = useAuth();
-  const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [showErrorBox, setShowErrorBox] = useState(false);
+  
+  // Forgot Password modal state
+  const [forgotModalOpen, setForgotModalOpen] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState('');
+  const [sendingRecovery, setSendingRecovery] = useState(false);
+
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    if (!recoveryEmail) return;
+    setSendingRecovery(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      toast.success(`Password recovery link dispatched to ${recoveryEmail}`);
+      setForgotModalOpen(false);
+      setRecoveryEmail('');
+    } catch (err) {
+      toast.error('Failed to trigger recovery flow.');
+    } finally {
+      setSendingRecovery(false);
+    }
+  };
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm({
     defaultValues: {
       email: 'Raven.k@transitops.in',
-      password: 'password123',
-      role: 'Dispatcher'
+      password: 'password123'
     }
   });
 
@@ -23,7 +45,6 @@ export default function Login() {
     setSubmitting(true);
     setShowErrorBox(false);
     try {
-      // Simulate validation. If password is empty or wrong, show error.
       if (!data.password || data.password.length < 4) {
         setFailedAttempts((prev) => prev + 1);
         setShowErrorBox(true);
@@ -31,25 +52,12 @@ export default function Login() {
         return;
       }
       
-      // Override auth context login with chosen role
       await login(data.email, data.password);
-      // Wait, our AuthContext login decides the role based on email context,
-      // but the mockup has a specific ROLE (RBAC) select box!
-      // Let's force the AuthContext to switch to the selected role right after login!
-      // We will switch to the user's selected role directly:
+      
+      // Let AuthContext handle authenticating and saving user details
       setTimeout(() => {
-        // Switch to the selected role
         window.location.href = '/';
       }, 100);
-
-      // Force context change
-      const storedUser = JSON.parse(localStorage.getItem('user'));
-      if (storedUser) {
-        storedUser.role = data.role;
-        storedUser.email = data.email;
-        storedUser.name = data.email.split('@')[0].replace('.', ' ');
-        localStorage.setItem('user', JSON.stringify(storedUser));
-      }
     } catch (err) {
       setFailedAttempts((prev) => prev + 1);
       setShowErrorBox(true);
@@ -58,10 +66,9 @@ export default function Login() {
     }
   };
 
-  const handleQuickLogin = (email, role) => {
+  const handleQuickLogin = (email) => {
     setValue('email', email);
     setValue('password', 'password123');
-    setValue('role', role);
   };
 
   return (
@@ -156,21 +163,6 @@ export default function Login() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="role" className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Role (RBAC)
-                </label>
-                <select
-                  id="role"
-                  {...register('role', { required: true })}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
-                >
-                  <option value="Fleet Manager">Fleet Manager</option>
-                  <option value="Dispatcher">Dispatcher</option>
-                  <option value="Safety Officer">Safety Officer</option>
-                  <option value="Financial Analyst">Financial Analyst</option>
-                </select>
-              </div>
             </div>
 
             {/* Remember & Forgot password */}
@@ -188,9 +180,13 @@ export default function Login() {
               </div>
 
               <div className="text-xs">
-                <a href="#forgot" className="font-semibold text-blue-500 hover:text-blue-600">
+                <button
+                  type="button"
+                  onClick={() => setForgotModalOpen(true)}
+                  className="font-semibold text-blue-500 hover:text-blue-600 cursor-pointer border-0 bg-transparent p-0"
+                >
                   Forgot password?
-                </a>
+                </button>
               </div>
             </div>
 
@@ -199,7 +195,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex w-full justify-center rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-bold text-slate-950 shadow-md hover:bg-amber-600 transition-all cursor-pointer"
+                className="flex w-full justify-center rounded-lg border border-amber-300/40 bg-amber-50 text-sm font-bold text-amber-900 shadow-sm hover:bg-amber-100 transition-all cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60 py-2"
               >
                 Sign In
               </button>
@@ -229,17 +225,60 @@ export default function Login() {
           )}
 
           {/* Quick simulation helper buttons for developers/reviewers */}
-          <div className="block lg:hidden mt-6 border-t border-slate-200 pt-4">
+          <div className="mt-6 border-t border-slate-200 dark:border-slate-800 pt-4">
             <div className="flex flex-wrap gap-2 justify-center">
-              <button onClick={() => handleQuickLogin('manager@transitops.in', 'Fleet Manager')} className="text-[10px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1 rounded">Manager</button>
-              <button onClick={() => handleQuickLogin('Raven.k@transitops.in', 'Dispatcher')} className="text-[10px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1 rounded">Dispatcher</button>
-              <button onClick={() => handleQuickLogin('safety@transitops.in', 'Safety Officer')} className="text-[10px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1 rounded">Safety</button>
-              <button onClick={() => handleQuickLogin('finance@transitops.in', 'Financial Analyst')} className="text-[10px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1 rounded">Finance</button>
+              <button type="button" onClick={() => handleQuickLogin('manager@transitops.in')} className="text-[10px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-2.5 py-1 rounded cursor-pointer">Manager</button>
+              <button type="button" onClick={() => handleQuickLogin('Raven.k@transitops.in')} className="text-[10px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-2.5 py-1 rounded cursor-pointer">Dispatcher</button>
+              <button type="button" onClick={() => handleQuickLogin('safety@transitops.in')} className="text-[10px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-2.5 py-1 rounded cursor-pointer">Safety</button>
+              <button type="button" onClick={() => handleQuickLogin('finance@transitops.in')} className="text-[10px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-2.5 py-1 rounded cursor-pointer">Finance</button>
             </div>
           </div>
 
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {forgotModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="sketch-panel w-full max-w-sm rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-stone-800 p-6 shadow-2xl">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-2 uppercase tracking-wider">Reset Password</h4>
+            <p className="text-slate-500 dark:text-slate-400 mb-4 text-xs">Enter your registered email address to receive recovery instructions.</p>
+            <form onSubmit={handleForgotSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-400 uppercase mb-1">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  value={recoveryEmail}
+                  onChange={(e) => setRecoveryEmail(e.target.value)}
+                  placeholder="manager@transitops.com"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-stone-800">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForgotModalOpen(false);
+                    setRecoveryEmail('');
+                  }}
+                  className="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs hover:bg-slate-100 dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={sendingRecovery}
+                  className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 text-xs font-bold hover:bg-amber-100 disabled:opacity-50 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60"
+                >
+                  {sendingRecovery ? 'Sending...' : 'Send Link'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

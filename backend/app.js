@@ -24,17 +24,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // REST API Bindings
-app.use('/auth', authRoutes);
-app.use('/vehicles', vehicleRoutes);
-app.use('/drivers', driverRoutes);
-app.use('/trips', tripRoutes);
-app.use('/maintenance', maintenanceRoutes);
-app.use('/fuel', fuelRoutes);
-app.use('/expenses', expenseRoutes);
-app.use('/reports', reportRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/drivers', driverRoutes);
+app.use('/api/trips', tripRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/fuel', fuelRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Shortcuts
-app.get('/dashboard', authenticate, getKPIs);
+app.get('/api/dashboard', authenticate, getKPIs);
 
 // Health check
 app.get('/health', (req, res) => {

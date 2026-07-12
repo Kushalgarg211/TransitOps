@@ -8,7 +8,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 8000,
+  timeout: 10000,
 });
 
 apiClient.interceptors.request.use(
@@ -35,20 +35,17 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Fallback helper to execute mock logic when API fails/is missing
+// Standard wrapper returning response.data
 export const handleApiWithFallback = async (apiCall, fallbackLogic) => {
   try {
     const response = await apiCall();
     return response.data;
   } catch (error) {
-    // If it's a network error (no response) or a 404 (endpoint not implemented), fall back to local storage
-    if (!error.response || error.response.status === 404 || error.response.status === 500) {
-      console.warn('API endpoint unavailable or failed. Using local storage simulated database.', error.message);
-      // Add a slight simulation delay
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      return fallbackLogic();
+    if (error.response && error.response.status === 401) {
+      throw error;
     }
-    toast.error(error.response?.data?.message || 'An error occurred during the request.');
+    const errorMsg = error.response?.data?.message || 'An error occurred during the request.';
+    toast.error(errorMsg);
     throw error;
   }
 };

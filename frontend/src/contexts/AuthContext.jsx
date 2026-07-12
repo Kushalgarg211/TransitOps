@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { loginUser as apiLogin } from '../services/auth';
 
 const AuthContext = createContext();
 
@@ -27,6 +28,12 @@ const ROLE_DETAILS = {
     email: 'david.finance@transitops.com',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
     description: 'Tracks operational expenses, fuel costs, ROI, and financial logs.',
+  },
+  'Super User': {
+    name: 'Sarthak Sahu',
+    email: 'sarthaksahu333@gmail.com',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+    description: 'Administrator with full system privileges and analytical access.',
   }
 };
 
@@ -46,31 +53,22 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoading(true);
     try {
-      // Simulate API loading state
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      let role = 'Fleet Manager';
-      const cleanEmail = email.toLowerCase();
-      if (cleanEmail.includes('dispatch')) role = 'Dispatcher';
-      else if (cleanEmail.includes('safety')) role = 'Safety Officer';
-      else if (cleanEmail.includes('finance') || cleanEmail.includes('analyst')) role = 'Financial Analyst';
-
-      const details = ROLE_DETAILS[role];
-      const mockUser = {
-        email,
-        role,
-        name: details.name,
-        avatar: details.avatar,
+      const response = await apiLogin(email, password);
+      const { token, user: backendUser } = response;
+      
+      const details = ROLE_DETAILS[backendUser.role] || {};
+      const loggedUser = {
+        ...backendUser,
+        avatar: details.avatar || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+        description: details.description || '',
       };
 
-      const mockToken = 'mock_jwt_token_for_' + role.replace(/\s+/g, '_').toLowerCase();
-      localStorage.setItem('token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      setUser(mockUser);
-      toast.success(`Logged in as ${role}!`);
-      return mockUser;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(loggedUser));
+      setUser(loggedUser);
+      toast.success(`Logged in as ${loggedUser.role}!`);
+      return loggedUser;
     } catch (err) {
-      toast.error('Login failed. Please check your credentials.');
       throw err;
     } finally {
       setLoading(false);

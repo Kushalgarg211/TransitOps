@@ -50,7 +50,7 @@ export default function FuelExpenses() {
     defaultValues: {
       liters: 42,
       cost: 3150,
-      date: '05 Jul 2026'
+      date: '2026-07-05'
     }
   });
 
@@ -130,14 +130,14 @@ export default function FuelExpenses() {
         <div className="flex gap-2">
           <button
             onClick={() => setFuelModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded bg-amber-400 hover:bg-amber-500 text-slate-950 px-3.5 py-2 text-xs font-bold shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 rounded border border-amber-300/40 bg-amber-50/80 text-amber-800 hover:bg-amber-100/80 px-3.5 py-2 text-xs font-bold shadow-xs transition-all cursor-pointer dark:bg-amber-950/30 dark:border-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-950/50"
           >
             <PlusIcon className="h-3.5 w-3.5" />
             <span>+ Log Fuel</span>
           </button>
           <button
             onClick={() => setExpenseModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded bg-amber-400 hover:bg-amber-500 text-slate-950 px-3.5 py-2 text-xs font-bold shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 rounded border border-amber-300/40 bg-amber-50/80 text-amber-800 hover:bg-amber-100/80 px-3.5 py-2 text-xs font-bold shadow-xs transition-all cursor-pointer dark:bg-amber-950/30 dark:border-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-950/50"
           >
             <PlusIcon className="h-3.5 w-3.5" />
             <span>+ Add Expense</span>
@@ -157,7 +157,7 @@ export default function FuelExpenses() {
                 <th className="py-2 font-bold uppercase text-slate-400">Vehicle</th>
                 <th className="py-2 font-bold uppercase text-slate-400">Date</th>
                 <th className="py-2 font-bold uppercase text-slate-400">Liters</th>
-                <th className="py-2 font-bold uppercase text-slate-400">Fuel Cost ($)</th>
+                <th className="py-2 font-bold uppercase text-slate-400">Fuel Cost (₹)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
@@ -171,7 +171,7 @@ export default function FuelExpenses() {
                     <td className="py-3 text-slate-600 dark:text-slate-300">{log.date || '05 Jul 2026'}</td>
                     <td className="py-3 font-medium text-slate-600 dark:text-slate-300">{log.gallons} L</td>
                     <td className="py-3 font-bold text-rose-500">
-                      -${(log.cost || 0).toLocaleString()}
+                      -₹{(log.cost || 0).toLocaleString()}
                     </td>
                   </tr>
                 );
@@ -192,9 +192,9 @@ export default function FuelExpenses() {
               <tr className="border-b border-slate-200 dark:border-stone-800">
                 <th className="py-2 font-bold uppercase text-slate-400">Trip</th>
                 <th className="py-2 font-bold uppercase text-slate-400">Vehicle</th>
-                <th className="py-2 font-bold uppercase text-slate-400">Toll ($)</th>
-                <th className="py-2 font-bold uppercase text-slate-400">Other ($)</th>
-                <th className="py-2 font-bold uppercase text-slate-400">Maint. (Linked) ($)</th>
+                <th className="py-2 font-bold uppercase text-slate-400">Toll (₹)</th>
+                <th className="py-2 font-bold uppercase text-slate-400">Other (₹)</th>
+                <th className="py-2 font-bold uppercase text-slate-400">Maint. (Linked) (₹)</th>
                 <th className="py-2 font-bold uppercase text-slate-400">Total / Status</th>
               </tr>
             </thead>
@@ -244,7 +244,7 @@ export default function FuelExpenses() {
                 <label className="block font-bold text-slate-400 uppercase mb-1">Vehicle</label>
                 <select
                   {...regFuel('vehiclePlate', { required: true })}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-700"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950"
                 >
                   <option value="">-- Choose Vehicle --</option>
                   {activeVehicles.map((v) => <option key={v.id} value={v.plateNumber}>{v.make} ({v.plateNumber})</option>)}
@@ -254,22 +254,22 @@ export default function FuelExpenses() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-slate-400 uppercase mb-1">Fuel (Liters)</label>
-                  <input type="number" {...regFuel('liters', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2" />
+                  <input type="number" {...regFuel('liters', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950" />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-400 uppercase mb-1">Cost ($)</label>
-                  <input type="number" {...regFuel('cost', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2" />
+                  <label className="block font-bold text-slate-400 uppercase mb-1">Cost (₹)</label>
+                  <input type="number" {...regFuel('cost', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950" />
                 </div>
               </div>
 
               <div>
                 <label className="block font-bold text-slate-400 uppercase mb-1">Date</label>
-                <input type="text" {...regFuel('date', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2" />
+                <input type="date" {...regFuel('date', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950" />
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t border-slate-200">
-                <button type="button" onClick={() => setFuelModalOpen(false)} className="rounded border border-slate-300 bg-white px-3 py-1.5 font-bold hover:bg-slate-100">Cancel</button>
-                <button type="submit" className="rounded bg-amber-400 text-slate-950 px-3 py-1.5 font-bold hover:bg-amber-500 cursor-pointer">Save Log</button>
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-stone-850">
+                <button type="button" onClick={() => setFuelModalOpen(false)} className="rounded border border-slate-300 bg-white px-3 py-1.5 font-bold hover:bg-slate-100 dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800 cursor-pointer">Cancel</button>
+                <button type="submit" className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 font-bold hover:bg-amber-100 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60">Save Log</button>
               </div>
             </form>
           </div>
@@ -286,7 +286,7 @@ export default function FuelExpenses() {
                 <label className="block font-bold text-slate-400 uppercase mb-1">Associated Trip</label>
                 <select
                   {...regExpense('tripNumber', { required: true })}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-700"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950"
                 >
                   {trips.map(t => <option key={t.id} value={t.tripNumber}>{t.tripNumber}</option>)}
                 </select>
@@ -294,22 +294,22 @@ export default function FuelExpenses() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-400 uppercase mb-1">Toll ($)</label>
-                  <input type="number" {...regExpense('toll', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2" />
+                  <label className="block font-bold text-slate-400 uppercase mb-1">Toll (₹)</label>
+                  <input type="number" {...regExpense('toll', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950" />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-400 uppercase mb-1">Other ($)</label>
-                  <input type="number" {...regExpense('other', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2" />
+                  <label className="block font-bold text-slate-400 uppercase mb-1">Other (₹)</label>
+                  <input type="number" {...regExpense('other', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950" />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-400 uppercase mb-1">Maint. ($)</label>
-                  <input type="number" {...regExpense('maintLinked', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2" />
+                  <label className="block font-bold text-slate-400 uppercase mb-1">Maint. (₹)</label>
+                  <input type="number" {...regExpense('maintLinked', { required: true })} className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950" />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t border-slate-200">
-                <button type="button" onClick={() => setExpenseModalOpen(false)} className="rounded border border-slate-300 bg-white px-3 py-1.5 font-bold hover:bg-slate-100">Cancel</button>
-                <button type="submit" className="rounded bg-amber-400 text-slate-950 px-3 py-1.5 font-bold hover:bg-amber-500 cursor-pointer">Add</button>
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-stone-850">
+                <button type="button" onClick={() => setExpenseModalOpen(false)} className="rounded border border-slate-300 bg-white px-3 py-1.5 font-bold hover:bg-slate-100 dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800 cursor-pointer">Cancel</button>
+                <button type="submit" className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 font-bold hover:bg-amber-100 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60">Add</button>
               </div>
             </form>
           </div>

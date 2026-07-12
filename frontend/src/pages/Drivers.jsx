@@ -1,17 +1,32 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { getDrivers, createDriver, updateDriver, deleteDriver } from '../services/drivers';
+import { getDrivers, createDriver, updateDriver, deleteDriver, sendLicenseReminders } from '../services/drivers';
 import { toast } from 'react-hot-toast';
-import { PlusIcon, PencilSquareIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilSquareIcon, TrashIcon, ExclamationTriangleIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../contexts/AuthContext';
 
 const LICENSE_CLASSES = ['LMV', 'HMV', 'Standard'];
 const STATUSES = ['Available', 'On Trip', 'Off Duty', 'Suspended'];
 
 export default function Drivers() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDriverId, setSelectedDriverId] = useState(null);
+  const [sendingReminders, setSendingReminders] = useState(false);
+
+  const handleSendReminders = async () => {
+    setSendingReminders(true);
+    try {
+      const res = await sendLicenseReminders();
+      toast.success(`Successfully checked expiring profiles. Alerts sent: ${res.results?.length || 0}`);
+    } catch (err) {
+      toast.error('Failed to trigger email reminders.');
+    } finally {
+      setSendingReminders(false);
+    }
+  };
 
   // Modal controls
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -73,6 +88,7 @@ export default function Drivers() {
       ...data,
       safetyScore: Number(data.safetyScore || 90),
       tripCompl: data.tripCompl || '90%',
+      status: data.safetyStatus
     });
     resetAdd();
   };
@@ -82,7 +98,8 @@ export default function Drivers() {
       id: editingDriver.id,
       data: {
         ...data,
-        safetyScore: Number(data.safetyScore),
+        safetyScore: Number(data.safetyScore || editingDriver.safetyScore || 90),
+        status: data.safetyStatus
       }
     });
   };
@@ -151,13 +168,25 @@ export default function Drivers() {
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Drivers & Safety Profiles</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">Onboard drivers, assign license classes, and inspect status logs.</p>
         </div>
-        <button
-          onClick={() => setAddModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded bg-amber-400 hover:bg-amber-500 text-slate-950 px-4 py-2 text-sm font-bold shadow-xs transition-all cursor-pointer"
-        >
-          <PlusIcon className="h-4.5 w-4.5" />
-          <span>Add Driver</span>
-        </button>
+        <div className="flex gap-2">
+          {(user?.role === 'Fleet Manager' || user?.role === 'Safety Officer') && (
+            <button
+              onClick={handleSendReminders}
+              disabled={sendingReminders}
+              className="inline-flex items-center justify-center gap-2 rounded border border-indigo-200/50 bg-indigo-50 text-indigo-800 hover:bg-indigo-100/80 px-4 py-2 text-sm font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50 dark:bg-indigo-950/20 dark:border-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+            >
+              <EnvelopeIcon className="h-4.5 w-4.5" />
+              <span>{sendingReminders ? 'Sending...' : 'Send Expiry Alerts'}</span>
+            </button>
+          )}
+          <button
+            onClick={() => setAddModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded border border-amber-300/40 bg-amber-50/80 text-amber-800 hover:bg-amber-100/80 px-4 py-2 text-sm font-bold shadow-xs transition-all cursor-pointer dark:bg-amber-950/30 dark:border-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-950/50"
+          >
+            <PlusIcon className="h-4.5 w-4.5" />
+            <span>Add Driver</span>
+          </button>
+        </div>
       </div>
 
       {/* Search Filter Bar */}
@@ -268,21 +297,22 @@ export default function Drivers() {
           >
             Available
           </button>
+
           <button
             onClick={() => handleToggleStatus('On Trip')}
-            className="rounded bg-blue-600 text-white font-semibold text-xs px-4 py-2 hover:bg-blue-700 cursor-pointer shadow-xs"
+            className="rounded bg-blue-50 text-blue-800 border border-blue-200/50 hover:bg-blue-100/80 font-bold text-xs px-4 py-2 transition-all cursor-pointer dark:bg-blue-950/20 dark:border-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-950/40"
           >
             On Trip
           </button>
           <button
             onClick={() => handleToggleStatus('Off Duty')}
-            className="rounded bg-slate-500 text-white font-semibold text-xs px-4 py-2 hover:bg-slate-650 cursor-pointer shadow-xs"
+            className="rounded bg-slate-50 text-slate-700 border border-slate-200/80 hover:bg-slate-100 font-bold text-xs px-4 py-2 transition-all cursor-pointer dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800"
           >
             Off Duty
           </button>
           <button
             onClick={() => handleToggleStatus('Suspended')}
-            className="rounded bg-rose-600 text-white font-semibold text-xs px-4 py-2 hover:bg-rose-700 cursor-pointer shadow-xs"
+            className="rounded bg-rose-50 text-rose-700 border border-rose-200/50 hover:bg-rose-100 font-bold text-xs px-4 py-2 transition-all cursor-pointer dark:bg-rose-950/20 dark:border-rose-900/30 dark:text-rose-450 dark:hover:bg-rose-950/40"
           >
             Suspended
           </button>
@@ -305,7 +335,7 @@ export default function Drivers() {
                 <input
                   type="text"
                   {...regAdd('name', { required: true })}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                   placeholder="Alex"
                 />
               </div>
@@ -316,7 +346,7 @@ export default function Drivers() {
                   <input
                     type="text"
                     {...regAdd('licenseNumber', { required: true })}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                     placeholder="DL-88213"
                   />
                 </div>
@@ -324,7 +354,7 @@ export default function Drivers() {
                   <label className="block font-bold text-slate-400 uppercase mb-1">License Class</label>
                   <select
                     {...regAdd('licenseClass', { required: true })}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900 text-slate-700"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                   >
                     {LICENSE_CLASSES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -335,10 +365,9 @@ export default function Drivers() {
                 <div>
                   <label className="block font-bold text-slate-400 uppercase mb-1">Expiry Date</label>
                   <input
-                    type="text"
+                    type="date"
                     {...regAdd('expiryDate', { required: true })}
-                    placeholder="2028-12-31"
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
                   />
                 </div>
                 <div>
@@ -346,7 +375,7 @@ export default function Drivers() {
                   <input
                     type="text"
                     {...regAdd('contact', { required: true })}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                     placeholder="98765xxxxx"
                   />
                 </div>
@@ -358,7 +387,7 @@ export default function Drivers() {
                   <input
                     type="text"
                     {...regAdd('tripCompl')}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                     placeholder="96%"
                   />
                 </div>
@@ -366,7 +395,7 @@ export default function Drivers() {
                   <label className="block font-bold text-slate-400 uppercase mb-1">Safety Status</label>
                   <select
                     {...regAdd('safetyStatus', { required: true })}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900 text-slate-700"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                   >
                     {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -377,13 +406,13 @@ export default function Drivers() {
                 <button
                   type="button"
                   onClick={() => setAddModalOpen(false)}
-                  className="rounded border border-slate-300 bg-white px-3 py-1.5 font-bold hover:bg-slate-100"
+                  className="rounded border border-slate-300 bg-white px-3 py-1.5 font-bold hover:bg-slate-100 dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded bg-amber-400 text-slate-950 px-3 py-1.5 font-bold hover:bg-amber-500 cursor-pointer"
+                  className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 font-bold hover:bg-amber-100 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60"
                 >
                   Onboard
                 </button>
@@ -404,7 +433,7 @@ export default function Drivers() {
                 <input
                   type="text"
                   {...regEdit('name', { required: true })}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
 
@@ -414,14 +443,14 @@ export default function Drivers() {
                   <input
                     type="text"
                     {...regEdit('licenseNumber', { required: true })}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
                   <label className="block font-bold text-slate-400 uppercase mb-1">License Class</label>
                   <select
                     {...regEdit('licenseClass', { required: true })}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900 text-slate-700"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                   >
                     {LICENSE_CLASSES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -432,9 +461,9 @@ export default function Drivers() {
                 <div>
                   <label className="block font-bold text-slate-400 uppercase mb-1">Expiry Date</label>
                   <input
-                    type="text"
+                    type="date"
                     {...regEdit('expiryDate', { required: true })}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
                   />
                 </div>
                 <div>
@@ -442,7 +471,7 @@ export default function Drivers() {
                   <input
                     type="text"
                     {...regEdit('contact', { required: true })}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
               </div>
@@ -453,14 +482,14 @@ export default function Drivers() {
                   <input
                     type="text"
                     {...regEdit('tripCompl')}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
                   <label className="block font-bold text-slate-400 uppercase mb-1">Safety Status</label>
                   <select
                     {...regEdit('safetyStatus', { required: true })}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900 text-slate-700"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:border-amber-500"
                   >
                     {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -474,13 +503,13 @@ export default function Drivers() {
                     setEditModalOpen(false);
                     setEditingDriver(null);
                   }}
-                  className="rounded border border-slate-300 bg-white px-3 py-1.5 font-bold hover:bg-slate-100"
+                  className="rounded border border-slate-300 bg-white px-3 py-1.5 font-bold hover:bg-slate-100 dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded bg-amber-400 text-slate-950 px-3 py-1.5 font-bold hover:bg-amber-600 cursor-pointer"
+                  className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 font-bold hover:bg-amber-100 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60"
                 >
                   Save
                 </button>
@@ -493,12 +522,12 @@ export default function Drivers() {
       {/* Delete Confirmation Modal */}
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-          <div className="sketch-panel w-full max-w-sm rounded bg-white dark:bg-slate-900 border border-slate-300">
+          <div className="sketch-panel w-full max-w-sm rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-stone-800 p-5">
             <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-2 uppercase">Delete Driver?</h4>
-            <p className="text-slate-500 mb-6 text-xs">This will remove the driver profile record permanently.</p>
+            <p className="text-slate-500 mb-6 text-xs dark:text-slate-400">This will remove the driver profile record permanently.</p>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setDeleteId(null)} className="rounded border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-100">Cancel</button>
-              <button onClick={() => deleteMutation.mutate(deleteId)} className="rounded bg-rose-600 text-white px-3 py-1.5 text-xs font-bold hover:bg-rose-500 cursor-pointer">Delete</button>
+              <button onClick={() => setDeleteId(null)} className="rounded border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-100 dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800 cursor-pointer">Cancel</button>
+              <button onClick={() => deleteMutation.mutate(deleteId)} className="rounded border border-rose-200/50 bg-rose-50 text-rose-700 px-3 py-1.5 text-xs font-bold hover:bg-rose-100 cursor-pointer transition-all dark:bg-rose-950/20 dark:border-rose-900/30 dark:text-rose-450 dark:hover:bg-rose-950/40">Delete</button>
             </div>
           </div>
         </div>

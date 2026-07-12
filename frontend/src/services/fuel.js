@@ -1,52 +1,45 @@
 import apiClient, { handleApiWithFallback } from './api';
-import { getFromDb, saveToDb } from './mockDb';
+
+const parseDateToIso = (dateStr) => {
+  if (!dateStr) return new Date().toISOString().split('T')[0];
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      const month = parts[0].padStart(2, '0');
+      const day = parts[1].padStart(2, '0');
+      const year = parts[2];
+      return `${year}-${month}-${day}`;
+    }
+  }
+  return dateStr;
+};
+
+const mapToFrontend = (f) => {
+  if (!f) return null;
+  return {
+    id: `f-${f.id}`,
+    vehicleId: `v-${f.vehicle_id}`,
+    gallons: parseFloat(f.liters),
+    cost: parseFloat(f.cost),
+    date: f.date
+  };
+};
 
 export const getFuelLogs = async () => {
-  return handleApiWithFallback(
-    () => apiClient.get('/fuel'),
-    () => getFromDb('to_fuel')
-  );
+  const res = await handleApiWithFallback(() => apiClient.get('/fuel'), () => ({ data: [] }));
+  const list = Array.isArray(res?.data) ? res.data : [];
+  return list.map(mapToFrontend);
 };
 
 export const createFuelLog = async (data) => {
-  return handleApiWithFallback(
-    () => apiClient.post('/fuel', data),
-    () => {
-      const list = getFromDb('to_fuel');
-      const newLog = {
-        ...data,
-        id: `f-${Date.now()}`,
-        gallons: Number(data.gallons || 0),
-        cost: Number(data.cost || 0),
-        odometer: Number(data.odometer || 0),
-        date: data.date || new Date().toISOString().split('T')[0],
-      };
-      list.unshift(newLog);
-      saveToDb('to_fuel', list);
-      
-      // Update vehicle mileage
-      if (newLog.vehicleId) {
-        const vehicles = getFromDb('to_vehicles');
-        const vIndex = vehicles.findIndex((v) => v.id === newLog.vehicleId);
-        if (vIndex !== -1 && newLog.odometer > vehicles[vIndex].mileage) {
-          vehicles[vIndex].mileage = newLog.odometer;
-          saveToDb('to_vehicles', vehicles);
-        }
-        
-        // Also log as an expense
-        const expenses = getFromDb('to_expenses');
-        expenses.unshift({
-          id: `e-${Date.now()}`,
-          vehicleId: newLog.vehicleId,
-          type: 'Fuel',
-          amount: newLog.cost,
-          date: newLog.date,
-          description: `Fuel Fill-up: ${newLog.gallons} units`,
-        });
-        saveToDb('to_expenses', expenses);
-      }
-      
-      return newLog;
-    }
-  );
+  const cleanVehicleId = parseInt(String(data.vehicleId).replace('v-', ''), 10);
+
+  const body = {
+    vehicle_id: cleanVehicleId,
+    liters: parseFloat(data.gallons),
+    cost: parseFloat(data.cost),
+    date: parseDateToIso(data.date),
+  };
+  const res = await handleApiWithFallback(() => apiClient.post('/fuel', body), () => null);
+  return res?.data ? mapToFrontend(res.data) : null;
 };

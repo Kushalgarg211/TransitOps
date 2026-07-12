@@ -1,80 +1,57 @@
 import apiClient, { handleApiWithFallback } from './api';
-import { getFromDb, saveToDb } from './mockDb';
+
+const parseDateToIso = (dateStr) => {
+  if (!dateStr) return new Date().toISOString().split('T')[0];
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      const month = parts[0].padStart(2, '0');
+      const day = parts[1].padStart(2, '0');
+      const year = parts[2];
+      return `${year}-${month}-${day}`;
+    }
+  }
+  return dateStr;
+};
+
+const mapToFrontend = (m) => {
+  if (!m) return null;
+  return {
+    id: `m-${m.id}`,
+    vehicleId: `v-${m.vehicle_id}`,
+    description: m.description,
+    cost: parseFloat(m.cost),
+    status: m.active ? 'Open' : 'Closed',
+    date: m.start_date
+  };
+};
 
 export const getMaintenanceLogs = async () => {
-  return handleApiWithFallback(
-    () => apiClient.get('/maintenance'),
-    () => getFromDb('to_maintenance')
-  );
+  const res = await handleApiWithFallback(() => apiClient.get('/maintenance'), () => ({ data: [] }));
+  const list = Array.isArray(res?.data) ? res.data : [];
+  return list.map(mapToFrontend);
 };
 
 export const openMaintenanceLog = async (data) => {
-  return handleApiWithFallback(
-    () => apiClient.post('/maintenance', data),
-    () => {
-      const list = getFromDb('to_maintenance');
-      const newLog = {
-        ...data,
-        id: `m-${Date.now()}`,
-        cost: Number(data.cost || 0),
-        status: 'Open',
-        date: data.date || new Date().toISOString().split('T')[0],
-      };
-      list.unshift(newLog);
-      saveToDb('to_maintenance', list);
-      
-      // Put vehicle in shop
-      if (newLog.vehicleId) {
-        updateVehicleStatus(newLog.vehicleId, 'In Shop');
-      }
-      
-      return newLog;
-    }
-  );
+  const cleanVehicleId = parseInt(String(data.vehicleId).replace('v-', ''), 10);
+
+  const body = {
+    vehicle_id: cleanVehicleId,
+    maintenance_type: data.type || 'Repair',
+    description: data.description,
+    cost: parseFloat(data.cost || 0),
+    start_date: parseDateToIso(data.date),
+  };
+  const res = await handleApiWithFallback(() => apiClient.post('/maintenance', body), () => null);
+  return res?.data ? mapToFrontend(res.data) : null;
 };
 
 export const closeMaintenanceLog = async (id, cost) => {
-  return handleApiWithFallback(
-    () => apiClient.patch(`/maintenance/${id}/close`, { cost }),
-    () => {
-      const list = getFromDb('to_maintenance');
-      const index = list.findIndex((m) => m.id === id);
-      if (index === -1) throw new Error('Maintenance log not found');
-      
-      const log = list[index];
-      log.status = 'Closed';
-      log.cost = Number(cost);
-      list[index] = log;
-      saveToDb('to_maintenance', list);
-      
-      // Update vehicle back to available
-      if (log.vehicleId) {
-        updateVehicleStatus(log.vehicleId, 'Available');
-        
-        // Also add this to expense history
-        const expenses = getFromDb('to_expenses');
-        expenses.unshift({
-          id: `e-${Date.now()}`,
-          vehicleId: log.vehicleId,
-          type: 'Maintenance',
-          amount: Number(cost),
-          date: new Date().toISOString().split('T')[0],
-          description: `Completed: ${log.description}`,
-        });
-        saveToDb('to_expenses', expenses);
-      }
-      
-      return log;
-    }
-  );
-};
+  const cleanId = typeof id === 'string' ? id.replace('m-', '') : id;
 
-const updateVehicleStatus = (vehicleId, status) => {
-  const vehicles = getFromDb('to_vehicles');
-  const index = vehicles.findIndex((v) => v.id === vehicleId);
-  if (index !== -1) {
-    vehicles[index].status = status;
-    vehicles[index].lastMaintenanceDate = new Date().toISOString().split('T')[0];
-    saveToDb('to_vehicles', vehicles);
-  }
+  const res = await handleApiWithFallback(() => apiClient.post(`/maintenance/${cleanId}/close`, {
+    cost: parseFloat(cost),
+    end_date: new Date().toISOString().split('T')[0]
+  }), () => null);
+  return res?.data ? mapToFrontend(res.data) : null;
 };
