@@ -73,52 +73,35 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen w-screen bg-white text-slate-800 dark:bg-slate-950 dark:text-slate-100 font-sans">
-      {/* Left Panel: Dark background branding */}
-      <div className="hidden lg:flex w-5/12 bg-slate-900 text-white p-12 flex-col justify-between relative overflow-hidden border-r border-slate-800">
-        <div className="space-y-6">
-          {/* Logo & Headline */}
-          <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-500 shadow-md">
-              {/* grid icon pattern */}
-              <div className="grid grid-cols-3 gap-0.5 w-6 h-6">
-                {[...Array(9)].map((_, i) => (
-                  <div key={i} className="bg-slate-900 w-1.5 h-1.5 rounded-2xs"></div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-white font-sans">TransitOps</h1>
-              <p className="text-sm text-slate-400 font-sans mt-0.5">Smart Transport Operations Platform</p>
-            </div>
-          </div>
-
-          {/* List of roles */}
-          <div className="pt-16 space-y-4">
-            <h2 className="text-lg font-bold text-slate-200">One login, four roles:</h2>
-            <ul className="space-y-3 pl-2 text-sm text-slate-400">
-              <li className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-                Fleet Manager
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-                Dispatcher
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-                Safety Officer
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-                Financial Analyst
-              </li>
-            </ul>
-          </div>
+      {/* Left Panel: Dark background branding with WebP cover */}
+      <div className="hidden lg:flex w-5/12 bg-slate-900 text-white flex-col justify-between relative overflow-hidden border-r border-slate-800">
+        {/* Background Image with overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/login_page.webp" 
+            alt="TransitOps Hub" 
+            className="w-full h-full object-cover opacity-65"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/50 to-slate-900/60 z-10"></div>
         </div>
 
-        {/* Footer */}
-        <div className="text-[10px] text-slate-500 tracking-wider font-semibold">
-          TRANSITOPS © 2026 • RBAC ENABLED
+        {/* Content overlaid on top of background */}
+        <div className="relative z-20 p-12 flex-1 flex flex-col justify-between">
+          <div className="space-y-6">
+            {/* Logo & Headline */}
+            <div className="flex items-center gap-3">
+              <img src="/logo1.webp" className="h-24 w-24 object-contain rounded-xl shadow-lg" alt="TransitOps Logo" />
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight text-white font-sans">TransitOps</h1>
+                <p className="text-sm text-slate-350 font-sans mt-0.5">Smart Transport Operations Platform</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="text-[10px] text-slate-400 tracking-wider font-semibold">
+            TRANSITOPS © 2026 • RBAC ENABLED
+          </div>
         </div>
       </div>
 
@@ -195,7 +178,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex w-full justify-center rounded-lg border border-amber-300/40 bg-amber-50 text-sm font-bold text-amber-900 shadow-sm hover:bg-amber-100 transition-all cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60 py-2"
+                className="flex w-full justify-center rounded-lg border border-amber-300 bg-amber-100 text-sm font-bold text-amber-950 shadow-sm hover:bg-amber-200/85 transition-all cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60 py-2"
               >
                 Sign In
               </button>
@@ -269,7 +252,7 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={sendingRecovery}
-                  className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 text-xs font-bold hover:bg-amber-100 disabled:opacity-50 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60"
+                  className="rounded border border-amber-300 bg-amber-100 text-amber-950 px-3 py-1.5 text-xs font-bold hover:bg-amber-200/85 disabled:opacity-50 cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
                 >
                   {sendingRecovery ? 'Sending...' : 'Send Link'}
                 </button>

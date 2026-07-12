@@ -50,24 +50,22 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-amber-100/70 text-slate-800 border-r border-amber-200/70 transition-transform duration-150 ease-in-out md:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-amber-100/70 text-slate-800 border-r border-amber-200/70 transition-transform duration-300 ease-in-out flex flex-col justify-between dark:bg-stone-900 dark:text-stone-100 dark:border-stone-800 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } flex flex-col justify-between dark:bg-stone-900 dark:text-stone-100 dark:border-stone-800`}
+      }`}
     >
       <div>
         {/* Header */}
         <div className="flex h-16 items-center justify-between px-6 border-b border-amber-200/50 dark:border-stone-800">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-amber-400 text-slate-950 font-bold text-xs">
-              TO
-            </div>
+            <img src="/logo1.webp" className="h-12 w-12 object-contain rounded" alt="TransitOps Logo" />
             <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
               TransitOps
             </span>
           </div>
           <button
             onClick={onClose}
-            className="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-stone-400 dark:hover:bg-stone-800 md:hidden"
+            className="rounded p-1 text-slate-500 hover:bg-slate-200 dark:text-stone-400 dark:hover:bg-stone-800 cursor-pointer transition-colors"
           >
             <span className="sr-only">Close sidebar</span>
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -82,7 +80,11 @@ export default function Sidebar({ isOpen, onClose }) {
             <NavLink
               key={item.name}
               to={item.to}
-              onClick={() => onClose && onClose()}
+              onClick={() => {
+                if (window.innerWidth < 768 && onClose) {
+                  onClose();
+                }
+              }}
               className={({ isActive }) =>
                 `group flex items-center px-4 py-2 text-sm font-semibold transition-all border ${
                   isActive

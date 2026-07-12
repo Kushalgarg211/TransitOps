@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Bars3Icon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 export default function Topbar({ onMenuOpen }) {
-  const { user, switchRole, availableRoles } = useAuth();
+  const { user, switchRole, availableRoles, globalSearch, setGlobalSearch } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Helper to extract initials
@@ -23,7 +23,7 @@ export default function Topbar({ onMenuOpen }) {
       <div className="flex items-center gap-4 flex-1">
         <button
           onClick={onMenuOpen}
-          className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 md:hidden dark:text-slate-400 dark:hover:bg-slate-850 dark:hover:text-white"
+          className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-850 dark:hover:text-white cursor-pointer transition-colors"
         >
           <span className="sr-only">Open sidebar</span>
           <Bars3Icon className="h-6 w-6" />
@@ -34,6 +34,8 @@ export default function Topbar({ onMenuOpen }) {
           <input
             type="text"
             placeholder="Search..."
+            value={globalSearch}
+            onChange={(e) => setGlobalSearch(e.target.value)}
             className="w-full rounded-md border border-slate-350 bg-slate-50/50 pl-3 pr-8 py-1.5 text-xs text-slate-900 placeholder-slate-450 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-slate-850 dark:bg-slate-900/50 dark:text-white"
           />
           <MagnifyingGlassIcon className="absolute right-3 top-2.5 h-3.5 w-3.5 text-slate-400" />

@@ -6,7 +6,7 @@ import Topbar from '../components/Topbar';
 
 export default function MainLayout() {
   const { isAuthenticated, loading } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
 
   if (loading) {
     return (
@@ -37,8 +37,8 @@ export default function MainLayout() {
       )}
 
       {/* Main content viewport */}
-      <div className="flex flex-1 flex-col overflow-hidden md:pl-64">
-        <Topbar onMenuOpen={() => setSidebarOpen(true)} />
+      <div className={`flex flex-1 flex-col overflow-hidden transition-all duration-300 ${sidebarOpen ? 'md:pl-64' : 'md:pl-0'}`}>
+        <Topbar onMenuOpen={() => setSidebarOpen(!sidebarOpen)} />
         
         <main className="flex-1 overflow-y-auto px-6 py-6 focus:outline-none">
           {/* Framer motion or standard slide layout */}

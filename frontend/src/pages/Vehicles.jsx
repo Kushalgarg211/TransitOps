@@ -4,13 +4,14 @@ import { useForm } from 'react-hook-form';
 import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from '../services/vehicles';
 import { toast } from 'react-hot-toast';
 import { PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../contexts/AuthContext';
 
 const VEHICLE_TYPES = ['Van', 'Truck', 'Mini', 'Semi'];
 const STATUSES = ['Available', 'On Trip', 'In Shop', 'Retired'];
 
 export default function Vehicles() {
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { globalSearch, setGlobalSearch } = useAuth();
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
@@ -62,14 +63,14 @@ export default function Vehicles() {
   const filteredVehicles = useMemo(() => {
     return vehicles.filter((v) => {
       const matchesSearch =
-        v.plateNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        v.make?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        v.model?.toLowerCase().includes(searchTerm.toLowerCase());
+        v.plateNumber?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        v.make?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        v.model?.toLowerCase().includes(globalSearch.toLowerCase());
       const matchesStatus = statusFilter ? v.status === statusFilter : true;
       const matchesType = typeFilter ? v.type === typeFilter : true;
       return matchesSearch && matchesStatus && matchesType;
     });
-  }, [vehicles, searchTerm, statusFilter, typeFilter]);
+  }, [vehicles, globalSearch, statusFilter, typeFilter]);
 
   const onAddSubmit = (data) => {
     const exists = vehicles.some(v => v.plateNumber.toLowerCase() === data.plateNumber.toLowerCase());
@@ -139,7 +140,7 @@ export default function Vehicles() {
         </div>
          <button
           onClick={() => setAddModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded border border-amber-300/40 bg-amber-50/80 text-amber-800 hover:bg-amber-100/80 px-4 py-2 text-sm font-bold shadow-xs transition-all cursor-pointer dark:bg-amber-950/30 dark:border-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-950/50"
+          className="inline-flex items-center justify-center gap-2 rounded border border-amber-350 bg-amber-100 text-amber-950 hover:bg-amber-200/85 px-4 py-2 text-sm font-bold shadow-xs transition-all cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
         >
           <PlusIcon className="h-4.5 w-4.5" />
           <span>Add Vehicle</span>
@@ -179,8 +180,8 @@ export default function Vehicles() {
           <input
             type="text"
             placeholder="Search reg. no..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={globalSearch}
+            onChange={(e) => setGlobalSearch(e.target.value)}
             className="w-full rounded border border-slate-300 bg-white px-3 py-1 text-xs text-slate-900 placeholder-slate-450 focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-white"
           />
         </div>
@@ -351,7 +352,7 @@ export default function Vehicles() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 font-bold hover:bg-amber-100 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60"
+                  className="rounded border border-amber-300 bg-amber-100 text-amber-950 px-3 py-1.5 font-bold hover:bg-amber-200/85 cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
                 >
                   Register
                 </button>
@@ -448,7 +449,7 @@ export default function Vehicles() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 font-bold hover:bg-amber-100 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60"
+                  className="rounded border border-amber-300 bg-amber-100 text-amber-950 px-3 py-1.5 font-bold hover:bg-amber-200/85 cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
                 >
                   Save
                 </button>

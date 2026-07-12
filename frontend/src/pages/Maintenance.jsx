@@ -1,17 +1,33 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { getMaintenanceLogs, openMaintenanceLog, closeMaintenanceLog } from '../services/maintenance';
 import { getVehicles } from '../services/vehicles';
 import { toast } from 'react-hot-toast';
 import { CheckIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Maintenance() {
   const queryClient = useQueryClient();
+  const { globalSearch } = useAuth();
 
   // Queries
   const { data: logs = [], isLoading: logsLoading } = useQuery({ queryKey: ['maintenanceLogs'], queryFn: getMaintenanceLogs });
   const { data: vehicles = [], isLoading: vehiclesLoading } = useQuery({ queryKey: ['vehicles'], queryFn: getVehicles });
+
+  const filteredLogs = useMemo(() => {
+    if (!globalSearch) return logs;
+    const term = globalSearch.toLowerCase();
+    return logs.filter((log) => {
+      const vehicle = vehicles.find((v) => v.id === log.vehicleId);
+      return (
+        log.description?.toLowerCase().includes(term) ||
+        log.status?.toLowerCase().includes(term) ||
+        vehicle?.plateNumber?.toLowerCase().includes(term) ||
+        vehicle?.make?.toLowerCase().includes(term)
+      );
+    });
+  }, [logs, vehicles, globalSearch]);
 
   // Mutations
   const openMutation = useMutation({
@@ -153,7 +169,7 @@ export default function Maintenance() {
 
             <button
               type="submit"
-              className="w-full rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-4 py-2 font-bold hover:bg-amber-100 transition-all cursor-pointer text-center dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-950/60"
+              className="w-full rounded border border-amber-300 bg-amber-100 text-amber-950 px-4 py-2 font-bold hover:bg-amber-200/85 transition-all cursor-pointer text-center dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
             >
               Save
             </button>
@@ -196,7 +212,7 @@ export default function Maintenance() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
-                {logs.map((log) => {
+                {filteredLogs.map((log) => {
                   const vehicle = vehicles.find((v) => v.id === log.vehicleId);
 
                   return (
@@ -217,7 +233,7 @@ export default function Maintenance() {
                         {log.status === 'Open' ? (
                           <button
                             onClick={() => handleClose(log.id, log.cost)}
-                            className="inline-flex items-center gap-0.5 rounded border border-emerald-200/50 bg-emerald-50 text-emerald-800 px-2 py-0.5 text-[10px] font-bold hover:bg-emerald-100 cursor-pointer transition-all dark:bg-emerald-950/20 dark:border-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                            className="inline-flex items-center gap-0.5 rounded border border-emerald-300 bg-emerald-100 text-emerald-950 px-2 py-0.5 text-[10px] font-bold hover:bg-emerald-200/85 cursor-pointer transition-all dark:bg-emerald-900/30 dark:border-emerald-850 dark:text-emerald-250 dark:hover:bg-emerald-900/55"
                           >
                             <CheckIcon className="h-3 w-3" />
                             Resolve Available

@@ -100,6 +100,8 @@ export const AuthProvider = ({ children }) => {
     toast.success(`Switched active view to ${newRole}`);
   };
 
+  const [globalSearch, setGlobalSearch] = useState('');
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -108,7 +110,9 @@ export const AuthProvider = ({ children }) => {
       logout,
       switchRole,
       isAuthenticated: !!user,
-      availableRoles: Object.keys(ROLE_DETAILS)
+      availableRoles: Object.keys(ROLE_DETAILS),
+      globalSearch,
+      setGlobalSearch
     }}>
       {children}
     </AuthContext.Provider>

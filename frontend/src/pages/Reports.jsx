@@ -205,7 +205,7 @@ export default function Reports() {
           </button>
           <button
             onClick={handleDownloadPDF}
-            className="inline-flex items-center gap-1.5 rounded border border-amber-300/40 bg-amber-50/80 text-amber-800 hover:bg-amber-100/80 px-3 py-1.5 text-xs font-bold cursor-pointer transition-all dark:bg-amber-950/30 dark:border-amber-900/30 dark:text-amber-450 dark:hover:bg-amber-950/50"
+            className="inline-flex items-center gap-1.5 rounded border border-amber-350 bg-amber-100 text-amber-950 hover:bg-amber-200/85 px-3 py-1.5 text-xs font-bold cursor-pointer transition-all dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
           >
             <PrinterIcon className="h-4 w-4" />
             <span>Print PDF</span>

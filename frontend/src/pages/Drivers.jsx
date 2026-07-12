@@ -10,9 +10,8 @@ const LICENSE_CLASSES = ['LMV', 'HMV', 'Standard'];
 const STATUSES = ['Available', 'On Trip', 'Off Duty', 'Suspended'];
 
 export default function Drivers() {
-  const { user } = useAuth();
+  const { user, globalSearch, setGlobalSearch } = useAuth();
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedDriverId, setSelectedDriverId] = useState(null);
   const [sendingReminders, setSendingReminders] = useState(false);
 
@@ -76,12 +75,12 @@ export default function Drivers() {
   const filteredDrivers = useMemo(() => {
     return drivers.filter((d) => {
       return (
-        d.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.licenseNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.contact?.toLowerCase().includes(searchTerm.toLowerCase())
+        d.name?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        d.licenseNumber?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        d.contact?.toLowerCase().includes(globalSearch.toLowerCase())
       );
     });
-  }, [drivers, searchTerm]);
+  }, [drivers, globalSearch]);
 
   const onAddSubmit = (data) => {
     createMutation.mutate({
@@ -173,7 +172,7 @@ export default function Drivers() {
             <button
               onClick={handleSendReminders}
               disabled={sendingReminders}
-              className="inline-flex items-center justify-center gap-2 rounded border border-indigo-200/50 bg-indigo-50 text-indigo-800 hover:bg-indigo-100/80 px-4 py-2 text-sm font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50 dark:bg-indigo-950/20 dark:border-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+              className="inline-flex items-center justify-center gap-2 rounded border border-indigo-300 bg-indigo-100 text-indigo-950 hover:bg-indigo-200/85 px-4 py-2 text-sm font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50 dark:bg-indigo-900/40 dark:border-indigo-800 dark:text-indigo-250 dark:hover:bg-indigo-900/60"
             >
               <EnvelopeIcon className="h-4.5 w-4.5" />
               <span>{sendingReminders ? 'Sending...' : 'Send Expiry Alerts'}</span>
@@ -181,7 +180,7 @@ export default function Drivers() {
           )}
           <button
             onClick={() => setAddModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded border border-amber-300/40 bg-amber-50/80 text-amber-800 hover:bg-amber-100/80 px-4 py-2 text-sm font-bold shadow-xs transition-all cursor-pointer dark:bg-amber-950/30 dark:border-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-950/50"
+            className="inline-flex items-center justify-center gap-2 rounded border border-amber-350 bg-amber-100 text-amber-950 hover:bg-amber-200/85 px-4 py-2 text-sm font-bold shadow-xs transition-all cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
           >
             <PlusIcon className="h-4.5 w-4.5" />
             <span>Add Driver</span>
@@ -196,8 +195,8 @@ export default function Drivers() {
           <input
             type="text"
             placeholder="Search by Name, License or Contact..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={globalSearch}
+            onChange={(e) => setGlobalSearch(e.target.value)}
             className="w-full rounded border border-slate-300 bg-white px-3 py-1 text-xs text-slate-900 placeholder-slate-450 focus:border-amber-500 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-white"
           />
         </div>
@@ -300,19 +299,19 @@ export default function Drivers() {
 
           <button
             onClick={() => handleToggleStatus('On Trip')}
-            className="rounded bg-blue-50 text-blue-800 border border-blue-200/50 hover:bg-blue-100/80 font-bold text-xs px-4 py-2 transition-all cursor-pointer dark:bg-blue-950/20 dark:border-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-950/40"
+            className="rounded bg-blue-100 border border-blue-300 text-blue-950 hover:bg-blue-200/85 font-bold text-xs px-4 py-2 transition-all cursor-pointer dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-250 dark:hover:bg-blue-900/50"
           >
             On Trip
           </button>
           <button
             onClick={() => handleToggleStatus('Off Duty')}
-            className="rounded bg-slate-50 text-slate-700 border border-slate-200/80 hover:bg-slate-100 font-bold text-xs px-4 py-2 transition-all cursor-pointer dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800"
+            className="rounded bg-slate-50 text-slate-700 border border-slate-200/80 hover:bg-slate-100 font-bold text-xs px-4 py-2 transition-all cursor-pointer dark:bg-stone-900 dark:border-stone-855 dark:text-stone-300 dark:hover:bg-stone-800"
           >
             Off Duty
           </button>
           <button
             onClick={() => handleToggleStatus('Suspended')}
-            className="rounded bg-rose-50 text-rose-700 border border-rose-200/50 hover:bg-rose-100 font-bold text-xs px-4 py-2 transition-all cursor-pointer dark:bg-rose-950/20 dark:border-rose-900/30 dark:text-rose-450 dark:hover:bg-rose-950/40"
+            className="rounded bg-rose-100 border border-rose-300 text-rose-950 hover:bg-rose-200/85 font-bold text-xs px-4 py-2 transition-all cursor-pointer dark:bg-rose-900/30 dark:border-rose-800 dark:text-rose-250 dark:hover:bg-rose-900/50"
           >
             Suspended
           </button>
@@ -412,7 +411,7 @@ export default function Drivers() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 font-bold hover:bg-amber-100 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60"
+                  className="rounded border border-amber-300 bg-amber-100 text-amber-950 px-3 py-1.5 font-bold hover:bg-amber-200/85 cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
                 >
                   Onboard
                 </button>
@@ -509,7 +508,7 @@ export default function Drivers() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 font-bold hover:bg-amber-100 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60"
+                  className="rounded border border-amber-300 bg-amber-100 text-amber-950 px-3 py-1.5 font-bold hover:bg-amber-200/85 cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
                 >
                   Save
                 </button>
@@ -527,7 +526,7 @@ export default function Drivers() {
             <p className="text-slate-500 mb-6 text-xs dark:text-slate-400">This will remove the driver profile record permanently.</p>
             <div className="flex justify-end gap-2">
               <button onClick={() => setDeleteId(null)} className="rounded border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-100 dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800 cursor-pointer">Cancel</button>
-              <button onClick={() => deleteMutation.mutate(deleteId)} className="rounded border border-rose-200/50 bg-rose-50 text-rose-700 px-3 py-1.5 text-xs font-bold hover:bg-rose-100 cursor-pointer transition-all dark:bg-rose-950/20 dark:border-rose-900/30 dark:text-rose-450 dark:hover:bg-rose-950/40">Delete</button>
+              <button onClick={() => deleteMutation.mutate(deleteId)} className="rounded border border-rose-350 bg-rose-100 text-rose-950 px-3 py-1.5 text-xs font-bold hover:bg-rose-200/85 cursor-pointer transition-all dark:bg-rose-900/30 dark:border-rose-800 dark:text-rose-250 dark:hover:bg-rose-900/50">Delete</button>
             </div>
           </div>
         </div>

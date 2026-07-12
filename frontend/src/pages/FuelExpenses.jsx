@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { getFuelLogs, createFuelLog } from '../services/fuel';
@@ -7,11 +7,13 @@ import { getVehicles } from '../services/vehicles';
 import { getTrips } from '../services/trips';
 import { toast } from 'react-hot-toast';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../contexts/AuthContext';
 
 const EXPENSE_TYPES = ['Toll', 'Other', 'Maintenance'];
 
 export default function FuelExpenses() {
   const queryClient = useQueryClient();
+  const { globalSearch } = useAuth();
   const [fuelModalOpen, setFuelModalOpen] = useState(false);
   const [expenseModalOpen, setExpenseModalOpen] = useState(false);
 
@@ -20,6 +22,33 @@ export default function FuelExpenses() {
   const { data: expenses = [], isLoading: expensesLoading } = useQuery({ queryKey: ['expenses'], queryFn: getExpenses });
   const { data: vehicles = [], isLoading: vehiclesLoading } = useQuery({ queryKey: ['vehicles'], queryFn: getVehicles });
   const { data: trips = [], isLoading: tripsLoading } = useQuery({ queryKey: ['trips'], queryFn: getTrips });
+
+  const filteredFuelLogs = useMemo(() => {
+    if (!globalSearch) return fuelLogs;
+    const term = globalSearch.toLowerCase();
+    return fuelLogs.filter((log) => {
+      const vehicle = vehicles.find((v) => v.id === log.vehicleId);
+      return (
+        log.date?.toLowerCase().includes(term) ||
+        vehicle?.plateNumber?.toLowerCase().includes(term) ||
+        vehicle?.make?.toLowerCase().includes(term)
+      );
+    });
+  }, [fuelLogs, vehicles, globalSearch]);
+
+  const filteredTrips = useMemo(() => {
+    const baseTrips = trips.slice(0, 2);
+    if (!globalSearch) return baseTrips;
+    const term = globalSearch.toLowerCase();
+    return baseTrips.filter((t) => {
+      const vehicle = vehicles.find(v => v.id === t.vehicleId);
+      return (
+        t.tripNumber?.toLowerCase().includes(term) ||
+        vehicle?.plateNumber?.toLowerCase().includes(term) ||
+        vehicle?.make?.toLowerCase().includes(term)
+      );
+    });
+  }, [trips, vehicles, globalSearch]);
 
   // Mutations
   const fuelMutation = useMutation({
@@ -130,14 +159,14 @@ export default function FuelExpenses() {
         <div className="flex gap-2">
           <button
             onClick={() => setFuelModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded border border-amber-300/40 bg-amber-50/80 text-amber-800 hover:bg-amber-100/80 px-3.5 py-2 text-xs font-bold shadow-xs transition-all cursor-pointer dark:bg-amber-950/30 dark:border-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-950/50"
+            className="inline-flex items-center justify-center gap-2 rounded border border-amber-350 bg-amber-100 text-amber-950 hover:bg-amber-200/85 px-3.5 py-2 text-xs font-bold shadow-xs transition-all cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
           >
             <PlusIcon className="h-3.5 w-3.5" />
             <span>+ Log Fuel</span>
           </button>
           <button
             onClick={() => setExpenseModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded border border-amber-300/40 bg-amber-50/80 text-amber-800 hover:bg-amber-100/80 px-3.5 py-2 text-xs font-bold shadow-xs transition-all cursor-pointer dark:bg-amber-950/30 dark:border-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-950/50"
+            className="inline-flex items-center justify-center gap-2 rounded border border-amber-350 bg-amber-100 text-amber-950 hover:bg-amber-200/85 px-3.5 py-2 text-xs font-bold shadow-xs transition-all cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
           >
             <PlusIcon className="h-3.5 w-3.5" />
             <span>+ Add Expense</span>
@@ -161,7 +190,7 @@ export default function FuelExpenses() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
-              {fuelLogs.map((log) => {
+              {filteredFuelLogs.map((log) => {
                 const vehicle = vehicles.find((v) => v.id === log.vehicleId);
                 return (
                   <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-stone-800/10">
@@ -200,7 +229,7 @@ export default function FuelExpenses() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-stone-800">
               {/* Load trip list to simulate associated records */}
-              {trips.slice(0, 2).map((trip, idx) => {
+              {filteredTrips.map((trip, idx) => {
                 const vehicle = vehicles.find(v => v.id === trip.vehicleId);
                 const tollVal = idx === 0 ? 120 : 340;
                 const otherVal = idx === 0 ? 0 : 150;
@@ -269,7 +298,7 @@ export default function FuelExpenses() {
 
               <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-stone-850">
                 <button type="button" onClick={() => setFuelModalOpen(false)} className="rounded border border-slate-300 bg-white px-3 py-1.5 font-bold hover:bg-slate-100 dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800 cursor-pointer">Cancel</button>
-                <button type="submit" className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 font-bold hover:bg-amber-100 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60">Save Log</button>
+                <button type="submit" className="rounded border border-amber-300 bg-amber-100 text-amber-950 px-3 py-1.5 font-bold hover:bg-amber-200/85 cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60" >Save Log</button>
               </div>
             </form>
           </div>
@@ -309,7 +338,7 @@ export default function FuelExpenses() {
 
               <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-stone-850">
                 <button type="button" onClick={() => setExpenseModalOpen(false)} className="rounded border border-slate-300 bg-white px-3 py-1.5 font-bold hover:bg-slate-100 dark:bg-stone-900 dark:border-stone-850 dark:text-stone-300 dark:hover:bg-stone-800 cursor-pointer">Cancel</button>
-                <button type="submit" className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-3 py-1.5 font-bold hover:bg-amber-100 cursor-pointer dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60">Add</button>
+                <button type="submit" className="rounded border border-amber-300 bg-amber-100 text-amber-950 px-3 py-1.5 font-bold hover:bg-amber-200/85 cursor-pointer dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60" >Add</button>
               </div>
             </form>
           </div>

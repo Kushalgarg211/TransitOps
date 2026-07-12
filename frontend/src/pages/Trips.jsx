@@ -312,7 +312,7 @@ export default function Trips() {
               <button
                 type="submit"
                 disabled={capacityExceeded}
-                className="flex-1 rounded border border-amber-300/40 bg-amber-50 text-amber-900 px-4 py-2 font-bold hover:bg-amber-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer text-center justify-center items-center dark:bg-amber-950/40 dark:border-amber-900/30 dark:text-amber-350 dark:hover:bg-amber-950/60"
+                className="flex-1 rounded border border-amber-300 bg-amber-100 text-amber-950 px-4 py-2 font-bold hover:bg-amber-200/85 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer text-center justify-center items-center dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-250 dark:hover:bg-amber-900/60"
               >
                 Dispatch {capacityExceeded && '(Disabled)'}
               </button>
@@ -371,7 +371,7 @@ export default function Trips() {
                     {trip.status === 'Draft' && (
                       <button
                         onClick={() => updateStatusMutation.mutate({ id: trip.id, status: 'Dispatched' })}
-                        className="inline-flex items-center gap-1 rounded border border-indigo-200/50 bg-indigo-50 text-indigo-800 px-2 py-0.5 text-[10px] font-bold hover:bg-indigo-100 cursor-pointer transition-all dark:bg-indigo-950/20 dark:border-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+                        className="inline-flex items-center gap-1 rounded border border-indigo-300 bg-indigo-100 text-indigo-950 px-2 py-0.5 text-[10px] font-bold hover:bg-indigo-200/85 cursor-pointer transition-all dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-250 dark:hover:bg-indigo-900/55"
                       >
                         Dispatch
                       </button>
@@ -379,7 +379,7 @@ export default function Trips() {
                     {trip.status === 'Dispatched' && (
                       <button
                         onClick={() => updateStatusMutation.mutate({ id: trip.id, status: 'Completed' })}
-                        className="inline-flex items-center gap-1 rounded border border-emerald-250/60 bg-emerald-50 text-emerald-800 px-2 py-0.5 text-[10px] font-bold hover:bg-emerald-100 cursor-pointer transition-all dark:bg-emerald-950/20 dark:border-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                        className="inline-flex items-center gap-1 rounded border border-emerald-300 bg-emerald-100 text-emerald-950 px-2 py-0.5 text-[10px] font-bold hover:bg-emerald-200/85 cursor-pointer transition-all dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-250 dark:hover:bg-emerald-900/55"
                       >
                         Complete
                       </button>
@@ -387,7 +387,7 @@ export default function Trips() {
                     {(trip.status === 'Draft' || trip.status === 'Dispatched') && (
                       <button
                         onClick={() => updateStatusMutation.mutate({ id: trip.id, status: 'Cancelled' })}
-                        className="inline-flex items-center gap-1 rounded border border-rose-200/50 bg-rose-50 text-rose-700 px-2 py-0.5 text-[10px] font-bold hover:bg-rose-100 cursor-pointer transition-all dark:bg-rose-950/20 dark:border-rose-900/30 dark:text-rose-450 dark:hover:bg-rose-950/40"
+                        className="inline-flex items-center gap-1 rounded border border-rose-300 bg-rose-100 text-rose-950 px-2 py-0.5 text-[10px] font-bold hover:bg-rose-200/85 cursor-pointer transition-all dark:bg-rose-900/30 dark:border-rose-800 dark:text-rose-250 dark:hover:bg-rose-900/55"
                       >
                         Cancel
                       </button>
