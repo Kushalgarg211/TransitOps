@@ -161,13 +161,11 @@ export default function Trips() {
               <select
                 value={selectedVehicleId}
                 onChange={(e) => setSelectedVehicleId(e.target.value)}
-                className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900 text-slate-700"
+                className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900 text-slate-700 dark:text-slate-350"
               >
                 <option value="">-- Select Available Vehicle --</option>
-                {/* Always make preloaded VAN-05 option visible for matching mock data */}
-                <option value="v-1">VAN-05 - 500 kg capacity</option>
-                {availableVehicles.filter(v => v.id !== 'v-1').map((v) => (
-                  <option key={v.id} value={v.id}>{v.make} - {v.capacity} capacity</option>
+                {availableVehicles.map((v) => (
+                  <option key={v.id} value={v.id}>{v.make} ({v.plateNumber}) - {v.capacity} capacity</option>
                 ))}
               </select>
             </div>
@@ -176,12 +174,10 @@ export default function Trips() {
               <label className="block font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Driver (Available Only)</label>
               <select
                 {...register('driverId', { required: true })}
-                className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900 text-slate-700"
+                className="w-full rounded border border-slate-300 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900 text-slate-700 dark:text-slate-350"
               >
                 <option value="">-- Select Available Driver --</option>
-                {/* Include Alex preloaded */}
-                <option value="d-1">Alex</option>
-                {availableDrivers.filter(d => d.id !== 'd-1').map((d) => (
+                {availableDrivers.map((d) => (
                   <option key={d.id} value={d.id}>{d.name}</option>
                 ))}
               </select>

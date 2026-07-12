@@ -1,83 +1,71 @@
 import apiClient, { handleApiWithFallback } from './api';
-import { getFromDb, saveToDb } from './mockDb';
+
+const mapToFrontend = (t) => {
+  if (!t) return null;
+  return {
+    id: `t-${t.id}`,
+    tripNumber: `TRIP-${String(t.id).padStart(3, '0')}`,
+    source: t.source,
+    destination: t.destination,
+    vehicleId: `v-${t.vehicle_id}`,
+    driverId: `d-${t.driver_id}`,
+    cargoWeight: parseFloat(t.cargo_weight),
+    distance: parseFloat(t.planned_distance),
+    revenue: parseFloat(t.revenue),
+    status: t.status === 'Pending' ? 'Draft'
+          : t.status === 'On Trip' ? 'Dispatched'
+          : t.status === 'Completed' ? 'Completed'
+          : 'Cancelled'
+  };
+};
 
 export const getTrips = async () => {
-  return handleApiWithFallback(
-    () => apiClient.get('/trips'),
-    () => getFromDb('to_trips')
-  );
+  const res = await handleApiWithFallback(() => apiClient.get('/trips'), () => ({ data: [] }));
+  const list = Array.isArray(res?.data) ? res.data : [];
+  return list.map(mapToFrontend);
 };
 
 export const createTrip = async (data) => {
-  return handleApiWithFallback(
-    () => apiClient.post('/trips', data),
-    () => {
-      const list = getFromDb('to_trips');
-      const newTrip = {
-        ...data,
-        id: `t-${Date.now()}`,
-        tripNumber: `TRIP-${Math.floor(1000 + Math.random() * 9000)}`,
-        cargoWeight: Number(data.cargoWeight || 0),
-        distance: Number(data.distance || 0),
-        revenue: Number(data.revenue || 0),
-        status: data.status || 'Pending',
-        departureDate: data.departureDate || new Date().toISOString().split('T')[0],
-      };
-      list.unshift(newTrip);
-      saveToDb('to_trips', list);
-      
-      // Update vehicle/driver statuses if dispatched
-      if (newTrip.status === 'Dispatched') {
-        updateVehicleAndDriverStatus(newTrip.vehicleId, newTrip.driverId, true);
-      }
-      
-      return newTrip;
-    }
-  );
+  const cleanVehicleId = parseInt(String(data.vehicleId).replace('v-', ''), 10);
+  const cleanDriverId = parseInt(String(data.driverId).replace('d-', ''), 10);
+
+  const body = {
+    source: data.source,
+    destination: data.destination,
+    vehicle_id: cleanVehicleId,
+    driver_id: cleanDriverId,
+    cargo_weight: parseFloat(data.cargoWeight),
+    planned_distance: parseFloat(data.distance),
+    revenue: parseFloat(data.revenue)
+  };
+  const res = await handleApiWithFallback(() => apiClient.post('/trips', body), () => null);
+  return res?.data ? mapToFrontend(res.data) : null;
 };
 
 export const updateTripStatus = async (id, status) => {
-  return handleApiWithFallback(
-    () => apiClient.patch(`/trips/${id}/status`, { status }),
-    () => {
-      const list = getFromDb('to_trips');
-      const index = list.findIndex((t) => t.id === id);
-      if (index === -1) throw new Error('Trip not found');
-      
-      const trip = list[index];
-      const oldStatus = trip.status;
-      trip.status = status;
-      
-      // If completed or cancelled, free up driver & vehicle
-      if (status === 'Completed' || status === 'Cancelled') {
-        updateVehicleAndDriverStatus(trip.vehicleId, trip.driverId, false);
-      } else if (status === 'Dispatched' && oldStatus === 'Pending') {
-        updateVehicleAndDriverStatus(trip.vehicleId, trip.driverId, true);
-      }
-      
-      list[index] = trip;
-      saveToDb('to_trips', list);
-      return trip;
-    }
-  );
-};
+  const cleanId = typeof id === 'string' ? id.replace('t-', '') : id;
 
-// Internal utility to switch driver/vehicle status based on dispatch state
-const updateVehicleAndDriverStatus = (vehicleId, driverId, isDispatched) => {
-  if (vehicleId) {
-    const vehicles = getFromDb('to_vehicles');
-    const vIndex = vehicles.findIndex((v) => v.id === vehicleId);
-    if (vIndex !== -1) {
-      vehicles[vIndex].status = isDispatched ? 'Active' : 'Available';
-      saveToDb('to_vehicles', vehicles);
-    }
-  }
-  if (driverId) {
-    const drivers = getFromDb('to_drivers');
-    const dIndex = drivers.findIndex((d) => d.id === driverId);
-    if (dIndex !== -1) {
-      drivers[dIndex].status = isDispatched ? 'On Duty' : 'Off Duty';
-      saveToDb('to_drivers', drivers);
-    }
+  if (status === 'Dispatched') {
+    const res = await handleApiWithFallback(() => apiClient.post(`/trips/${cleanId}/dispatch`), () => null);
+    return res?.data ? mapToFrontend(res.data) : null;
+  } else if (status === 'Cancelled') {
+    const res = await handleApiWithFallback(() => apiClient.post(`/trips/${cleanId}/cancel`), () => null);
+    return res?.data ? mapToFrontend(res.data) : null;
+  } else if (status === 'Completed') {
+    const tripRes = await handleApiWithFallback(() => apiClient.get(`/trips/${cleanId}`), () => null);
+    const trip = tripRes?.data;
+    if (!trip) return null;
+    
+    const distance = parseFloat(trip.planned_distance) || 0;
+    const fuel = Math.round(distance * 0.3) || 10;
+    const startOdometer = parseFloat(trip.start_odometer) || 0;
+    const endOdometer = startOdometer + distance;
+
+    const res = await handleApiWithFallback(() => apiClient.post(`/trips/${cleanId}/complete`, {
+      actual_distance: distance,
+      fuel_used: fuel,
+      end_odometer: endOdometer
+    }), () => null);
+    return res?.data ? mapToFrontend(res.data) : null;
   }
 };
