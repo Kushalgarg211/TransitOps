@@ -72,7 +72,6 @@ All users share the password: `password123` (except for the Super User).
 | **Trip Dispatcher** | `Raven.k@transitops.in` | `password123` | Dashboard, Trips, Settings |
 | **Safety Officer** | `safety@transitops.in` | `password123` | Drivers, Maintenance, Settings |
 | **Financial Analyst**| `finance@transitops.in` | `password123` | Fuel-Expenses, Reports, Settings |
-| **Super User** | `sarthaksahu333@gmail.com`| `vilenop1234` | **ALL FEATURES LUNCHED** |
 
 ---
 
@@ -87,7 +86,7 @@ Update the `.env` settings inside the `backend/` folder:
 ```ini
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=vilenop1234
+DB_PASSWORD=YOUR_DB_PASSWORD
 DB_NAME=transitops_db
 DB_PORT=3306
 JWT_SECRET=transitops_jwt_secret_key_2026_super_secure
