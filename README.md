@@ -86,7 +86,7 @@ Update the `.env` settings inside the `backend/` folder:
 ```ini
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=vilenop1234
+DB_PASSWORD=YOUR_DB_PASSWORD
 DB_NAME=transitops_db
 DB_PORT=3306
 JWT_SECRET=transitops_jwt_secret_key_2026_super_secure
